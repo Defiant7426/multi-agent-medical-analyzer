@@ -1,0 +1,82 @@
+[
+   {
+      "paciente_id": "P001",
+      "empresa": "ROBOCON SERVICIOS SAC",
+      "puesto_ocupacional": "Chofer",
+      "perfil": "PERFIL C: Chofer",
+      "sexo": "Masculino",
+      "tipo_examen": "INGRESO",
+      "resultados": [
+         {
+            "nombre_prueba": "Edad",
+            "valor": "35 años"
+         },
+         {
+            "nombre_prueba": "Índice de Masa Corporal (IMC)",
+            "valor": "24.5 kg/m²"
+         },
+         {
+            "nombre_prueba": "Examen Psicológico",
+            "valor": "Normal"
+         }
+      ]
+   },
+   {
+      "paciente_id": "P002",
+      "empresa": "ROBOCON SERVICIOS SAC",
+      "puesto_ocupacional": "Mecánico I",
+      "perfil": "PERFIL E: Mecánico I",
+      "sexo": "Masculino",
+      "tipo_examen": "INGRESO",
+      "resultados": [
+         {
+            "nombre_prueba": "Edad",
+            "valor": "40 años"
+         },
+         {
+            "nombre_prueba": "Colesterol Total",
+            "valor": "220 mg/dl"
+         }
+      ]
+   },
+   {
+      "paciente_id": "P003",
+      "empresa": "ROBOCON SERVICIOS SAC",
+      "puesto_ocupacional": "Chofer",
+      "perfil": "PERFIL C: Chofer",
+      "sexo": "Femenino",
+      "tipo_examen": "INGRESO",
+      "resultados": [
+         {
+            "nombre_prueba": "Edad",
+            "valor": "45 años"
+         },
+         {
+            "nombre_prueba": "Índice de Masa Corporal (IMC)",
+            "valor": "37.1 kg/m²"
+         },
+         {
+            "nombre_prueba": "Examen Psicológico",
+            "valor": "Normal"
+         }
+      ]
+   },
+   {
+      "paciente_id": "P004",
+      "empresa": "ROBOCON SERVICIOS SAC",
+      "puesto_ocupacional": "Mecánico I",
+      "perfil": "PERFIL E: Mecánico I",
+      "sexo": "Masculino",
+      "tipo_examen": "INGRESO",
+      "resultados": [
+         {
+            "nombre_prueba": "Edad",
+            "valor": "58 años"
+         },
+         {
+            "nombre_prueba": "Colesterol Total",
+            "valor": "180 mg/dl"
+         }
+      ]
+   }
+]

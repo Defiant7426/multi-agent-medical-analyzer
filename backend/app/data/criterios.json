@@ -1,0 +1,58 @@
+{
+   "ROBOCON SERVICIOS SAC": {
+      "PERFIL C: Chofer": {
+         "INGRESO": {
+            "General": {
+               "tipo_area": "Superficie",
+               "Edad": {
+                  "tipo": "texto",
+                  "rangos": {
+                     "apto": "Superficie: 21 a 55 años. Socavón: 21 a 45 años. Practicas superficiales: 18 años.",
+                     "observado": "No existe edad para clasificarlo como observado",
+                     "no_apto": "Superficie: <18 o >55 años. Socavón: < 21 o > 45 años."
+                  }
+               },
+               "Índice de Masa Corporal (IMC)": {
+                  "tipo": "texto",
+                  "rangos": {
+                     "apto": "IMC entre 18.5 y 24.9",
+                     "observado": "IMC entre 25.0 y 34.9 (recomendar dieta hipocalórica y ejercicio aeróbico) o IMC <18.5 (evaluar bajo peso)",
+                     "no_apto": "IMC > 35"
+                  }
+               },
+               "Examen Psicológico": {
+                  "tipo": "interpretativo",
+                  "rangos": {
+                     "apto": "Normal",
+                     "observado": "1) Alteraciones psicológicas menores que no influyan significativamente en el desempeño del puesto que se presenta \n 1) Baremos en rango leve",
+                     "no_apto": "1) Alteraciones psicológicas o psíquiátricas que influyan significativamente en el desempeño del puesto: Depresión, psicosis, esquizofrenia. \n 1) Baremos en rango severo en múltiples"
+                  }
+               }
+            }
+         }
+      },
+      "PERFIL E: Mecánico I": {
+         "INGRESO": {
+            "General": {
+               "tipo_area": "Superficie",
+               "Edad": {
+                  "tipo": "texto",
+                  "rangos": {
+                     "apto": "Superficie: 21 a 55 años",
+                     "observado": "No existe edad para clasificarlo como observado",
+                     "no_apto": "Superficie: <18 o >55 años"
+                  }
+               },
+               "Colesterol Total": {
+                  "tipo": "texto",
+                  "rangos": {
+                     "apto": "1) Normal (<200 mg/dl) \n 2) Solo para visitas:< 240 mg/dl sin factores de riesgo concomitante",
+                     "observado": "Entre 200 y 239 mg/dl",
+                     "no_apto": ">= 240 mg/dl con sintomatología cardiovascular"
+                  }
+               }
+            }
+         }
+      }
+   }
+}
