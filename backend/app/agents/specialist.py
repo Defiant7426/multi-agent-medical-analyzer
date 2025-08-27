@@ -56,7 +56,7 @@ def crear_agente_evaluador(llm):
     prompt = PromptTemplate.from_template(prompt_template)
 
     agent = create_react_agent(llm, tools, prompt)
-    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, handle_parsing_errors=True)
+    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, handle_parsing_errors=True, return_intermediate_steps=True)
 
     return agent_executor
 

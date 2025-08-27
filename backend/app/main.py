@@ -66,6 +66,17 @@ async def evaluar_paciente(paciente_id: str, prueba: str = "IMC"):
       try:
            resultado_agente = await agente_executor.ainvoke(input_data)
            conclusion = resultado_agente.get("output", "No se pudo obtener una conclusión")
+
+           # Extraemos los pasos intermedios
+           razonamiento = resultado_agente.get("intermediate_steps", [])
+
+           razonamiento_formateado = ""
+           
+           for action, observation in razonamiento:
+                razonamiento_formateado += f"Pensamiento: {action.log}\n"
+                razonamiento_formateado += f"Acción: {action.tool}({action.tool_input})\n"
+                razonamiento_formateado += f"Observación: {observation}\n-----\n"
+           
       except Exception as e:
            raise HTTPException(status_code=500, detail=f"Error al invocal al agente: {e}")
       
@@ -74,5 +85,5 @@ async def evaluar_paciente(paciente_id: str, prueba: str = "IMC"):
            prueba_evaluada=prueba,
            valor_paciente=valor_str,
            conclusion=conclusion,
-           razonamiento_completo="Aun no esta listo..."
+           razonamiento_completo=razonamiento_formateado
       )
