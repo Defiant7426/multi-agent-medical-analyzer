@@ -1,4 +1,4 @@
-from app.agents.tools import (
+from .tools import (
     es_mayor_que,
     es_menor_que,
     es_mayor_o_igual_que,
