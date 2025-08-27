@@ -1,20 +1,25 @@
 import os
 import json
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from backend.app.agents.specialist import crear_agente_evaluador
 
+from sqlalchemy.orm import Session
+from .database import database, models
+
+def get_db(): # Dependencia de FastAPI (se ejecuta por cada peticion)
+     db = database.SessionLocal()
+     try:
+          yield db
+     finally:
+          db.close()
+
 load_dotenv()
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0)
 agente_executor = crear_agente_evaluador(llm)
-
-with open("backend/app/data/pacientes.json", "r", encoding="utf-8") as f:
-    pacientes = json.load(f)
-with open("backend/app/data/criterios.json", "r", encoding="utf-8") as f:
-    criterios = json.load(f)
 
 app = FastAPI(
       title="API de Agente Evaluador",
@@ -29,38 +34,52 @@ class ResultadoEvaluacion(BaseModel):
       razonamiento_completo: str
 
 @app.post("/evaluar/{paciente_id}", response_model=ResultadoEvaluacion)
-async def evaluar_paciente(paciente_id: str, prueba: str = "IMC"):
+async def evaluar_paciente(
+     paciente_id: str, 
+     prueba: str = "IMC",
+     db: Session = Depends(get_db)     
+     ):
       """
       Recibe el ID del paciente y el nombre de la prueba,
       y utiliza al agente para determinar su aptitud
       """
       # Buscamos al paciente
-      paciente = next((p for p in pacientes if p["paciente_id"]==paciente_id), None)
+      paciente = db.query(models.Paciente).filter(models.Paciente.paciente_id == paciente_id).first()
 
       if not paciente:
            raise HTTPException(status_code=404, detail="Paciente no encontrado")
       
       # Ahora buscamos su prueba dado el nombre de la prueba
-      resultado_paciente = next((r for r in paciente["resultados"] if r["nombre_prueba"]==prueba), None)
+      resultado_paciente = db.query(models.Resultado).filter(
+           models.Resultado.paciente_id == paciente.id,
+           models.Resultado.nombre_prueba == prueba
+      ).first()
       if not resultado_paciente:
            raise HTTPException(status_code=404, detail=f"Prueba '{prueba}' no encontrada para el paciente {paciente_id}")
       
       #Extraemos la informacion que necesitamos
-      valor_str = resultado_paciente["valor"]
-      valor_float = float(valor_str.split()[0])
-      perfil = paciente["perfil"]
-      empresa = paciente["empresa"]
+      valor_str = resultado_paciente.valor
+      valor_float = float(valor_str.split()[0].replace(',','.'))
 
       # Buscamos el criterio para esta prueba y perfil
-      try:
-           criterios_prueba = criterios[empresa][perfil]["INGRESO"]["General"][prueba]
-      except KeyError:
-           raise HTTPException(status_code=404, detail="Criterios no encontrados para el perfil y la prueba especificados")
+      criterio = db.query(models.Criterio).filter(
+           models.Criterio.empresa == paciente.empresa,
+           models.Criterio.perfil == paciente.perfil,
+           models.Criterio.nombre_prueba == prueba
+      ).first()
+      if not criterio:
+           raise HTTPException(status_code=404, detail="Criterios no encontrados para este paciente en especifico")
       
+      criterios_para_agente = {
+          "apto": criterio.apto,
+          "observado": criterio.observado,
+          "no_apto": criterio.no_apto
+     }
+
       # Preparamos la entrada e invocamos al agente
       input_data = {
            "valor_paciente": valor_float,
-           "criterios_json": json.dumps(criterios_prueba["rangos"])
+           "criterios_json": json.dumps(criterios_para_agente)
       }
 
       try:
