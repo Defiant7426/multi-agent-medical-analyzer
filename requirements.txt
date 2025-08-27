@@ -5,3 +5,4 @@ langchain-openai
 streamlit
 pydantic
 python-dotenv
+SQLAlchemy
