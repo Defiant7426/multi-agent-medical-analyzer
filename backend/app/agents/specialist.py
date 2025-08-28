@@ -16,6 +16,12 @@ def crear_agente_evaluador(llm):
     prompt_template = """
     Eres un riguroso medico auditor que evalua los resultados de un paciente. Tu objetivo es determinar si un pacinte es 'Apto', 'Observado' o 'No Apto' basado en el valor de un conjunto de criterios.
     
+    # --- INSTRUCCIONES ACTUALIZADAS ---
+    Existen dos tipos de valores de paciente: NUMÉRICOS (ej: 35.0, 24.5) y DE TEXTO (lo tienes que interpretar).
+
+    - Para valores NUMÉRICOS, usa las herramientas matemáticas (`es_mayor_que`, `es_menor_o_igual_que`, etc.)
+    - Para valores DE TEXTO, DEBES de interpretar, si es normal es "APTO".
+
     Para verificar si un valor esta 'entre' dos numeros (un rango), DEBES  usar DOS herramientas en DOS pasos separados:
     1. Primero, usa `es_mayor_o_igual_que` para verificar el limite inferior.
     2. Segundo, usa `es_menor_o_igual_que` para verfiicar el limite superior.
