@@ -8,6 +8,8 @@ from backend.app.agents.specialist import crear_agente_evaluador
 
 from sqlalchemy.orm import Session
 from .database import database, models
+from typing import List, Dict
+from backend.app.agents.orchestrator import build_graph
 
 def get_db(): # Dependencia de FastAPI (se ejecuta por cada peticion)
      db = database.SessionLocal()
@@ -26,83 +28,37 @@ app = FastAPI(
       description="Una API para evaluar la aptitud de un paciente."
 )
 
-class ResultadoEvaluacion(BaseModel):
-      paciente_id: str
-      prueba_evaluada: str
-      valor_paciente: str
-      conclusion: str
-      razonamiento_completo: str
+class ResultadoIndividual(BaseModel):
+     prueba: str
+     resultado: str
+     razonamiento: str
 
-@app.post("/evaluar/{paciente_id}", response_model=ResultadoEvaluacion)
+class PerfilEvaluacionResponse(BaseModel):
+     paciente_id: str
+     veredicto_general: str
+     evaluaciones: List[ResultadoIndividual]
+
+@app.post("/evaluar-perfil/{paciente_id}", response_model=PerfilEvaluacionResponse)
 async def evaluar_paciente(
      paciente_id: str, 
-     prueba: str = "IMC",
      db: Session = Depends(get_db)     
      ):
       """
-      Recibe el ID del paciente y el nombre de la prueba,
-      y utiliza al agente para determinar su aptitud
+      Invoca al agente orquestador para una evaluación completa del perfil del paciente
       """
-      # Buscamos al paciente
-      paciente = db.query(models.Paciente).filter(models.Paciente.paciente_id == paciente_id).first()
+      graph = build_graph(db)
 
-      if not paciente:
-           raise HTTPException(status_code=404, detail="Paciente no encontrado")
-      
-      # Ahora buscamos su prueba dado el nombre de la prueba
-      resultado_paciente = db.query(models.Resultado).filter(
-           models.Resultado.paciente_id == paciente.id,
-           models.Resultado.nombre_prueba == prueba
-      ).first()
-      if not resultado_paciente:
-           raise HTTPException(status_code=404, detail=f"Prueba '{prueba}' no encontrada para el paciente {paciente_id}")
-      
-      #Extraemos la informacion que necesitamos
-      valor_str = resultado_paciente.valor
-      valor_float = float(valor_str.split()[0].replace(',','.'))
+      initial_input = {"patient_id": paciente_id}
 
-      # Buscamos el criterio para esta prueba y perfil
-      criterio = db.query(models.Criterio).filter(
-           models.Criterio.empresa == paciente.empresa,
-           models.Criterio.perfil == paciente.perfil,
-           models.Criterio.nombre_prueba == prueba
-      ).first()
-      if not criterio:
-           raise HTTPException(status_code=404, detail="Criterios no encontrados para este paciente en especifico")
-      
-      criterios_para_agente = {
-          "apto": criterio.apto,
-          "observado": criterio.observado,
-          "no_apto": criterio.no_apto
-     }
+      final_state = graph.invoke(initial_input)
 
-      # Preparamos la entrada e invocamos al agente
-      input_data = {
-           "valor_paciente": valor_float,
-           "criterios_json": json.dumps(criterios_para_agente)
-      }
+      resultados_individuales = [
+           ResultadoIndividual(prueba = test, resultado=res["verdict"], razonamiento=res["reasoning"])
+           for test, res in final_state["test_results"].items()
+      ]
 
-      try:
-           resultado_agente = await agente_executor.ainvoke(input_data)
-           conclusion = resultado_agente.get("output", "No se pudo obtener una conclusión")
-
-           # Extraemos los pasos intermedios
-           razonamiento = resultado_agente.get("intermediate_steps", [])
-
-           razonamiento_formateado = ""
-           
-           for action, observation in razonamiento:
-                razonamiento_formateado += f"Pensamiento: {action.log}\n"
-                razonamiento_formateado += f"Acción: {action.tool}({action.tool_input})\n"
-                razonamiento_formateado += f"Observación: {observation}\n-----\n"
-           
-      except Exception as e:
-           raise HTTPException(status_code=500, detail=f"Error al invocal al agente: {e}")
-      
-      return ResultadoEvaluacion(
-           paciente_id=paciente_id,
-           prueba_evaluada=prueba,
-           valor_paciente=valor_str,
-           conclusion=conclusion,
-           razonamiento_completo=razonamiento_formateado
+      return PerfilEvaluacionResponse(
+           paciente_id=final_state["patient_id"],
+           veredicto_general=final_state["final_veredict"],
+           evaluaciones = resultados_individuales
       )
