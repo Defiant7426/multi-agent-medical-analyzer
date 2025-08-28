@@ -6,3 +6,4 @@ streamlit
 pydantic
 python-dotenv
 SQLAlchemy
+langgraph
